@@ -1,0 +1,36 @@
+version: "3.3"
+
+services:
+  db:
+    container_name: db
+    image: postgres:11.13
+    environment:
+      - POSTGRES_USER=dan
+      - POSTGRES_PASSWORD=dan
+      - POSTGRES_DB=dan
+      - TZ=Europe/Moscow
+      - PGTZ=Europe/Moscow
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/scripts:/docker-entrypoint-initdb.d
+    command: postgres -c stats_temp_directory=/tmp
+
+  server:
+    container_name: server
+    build: ./server
+    environment:
+      - DB_USER=dan
+      - DB_HOST=db
+      - DB_NAME=dan
+      - DB_PASSWORD=dan
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    environment:
+      - API_URL=server:3000
+    ports:
+      - "8080:3000"
